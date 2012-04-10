@@ -1,5 +1,7 @@
 package DDLock::Server::Client::DBI;
 
+# Using DBI based ddlock is blocking. Probably shouldn't use this unless you need to.
+
 use strict;
 use warnings;
 

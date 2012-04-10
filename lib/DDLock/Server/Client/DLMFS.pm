@@ -1,5 +1,8 @@
 package DDLock::Server::Client::DLMFS;
 
+# I don't think this code was ever tested, back when I wrote this
+# dlmfs was causing my kernel to crash all the time.
+
 use strict;
 use warnings;
 
