@@ -22,9 +22,6 @@ use Danga::Socket;
 use IO::Socket::INET;
 use POSIX ();
 
-use vars qw($DEBUG);
-$DEBUG = 0;
-
 my (
     $daemonize,
     $nokeepalive,
@@ -37,7 +34,6 @@ my $lock_type = "internal";
 Getopt::Long::GetOptions(
     'd|daemon'       => \$daemonize,
     'p|port=i'       => \$conf_port,
-    'debug=i'        => \$DEBUG,
     'n|no-keepalive' => \$nokeepalive,
     't|type=s'       => \$lock_type,
     'h|hostname=s'   => \$hostname,
@@ -95,9 +91,6 @@ IO::Handle::blocking($server, 0);
 my $accept_handler = sub {
     my $csock = $server->accept();
     return unless $csock;
-
-    printf("Listen child making a Client for %d.\n", fileno($csock))
-        if $DEBUG;
 
     IO::Handle::blocking($csock, 0);
     setsockopt($csock, IPPROTO_TCP, TCP_NODELAY, pack("l", 1)) or die;
