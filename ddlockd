@@ -22,17 +22,6 @@ use Danga::Socket;
 use IO::Socket::INET;
 use POSIX ();
 
-## the storage load intervals: %IVs = ( time_iv => load, ... )
-our %IVs = ();
-## haw many load buckets we want
-our $Bucket_qty = 100; #
-## the total duration of load measurement
-our $Total_duration = 60 * 5; # 5mn
-## the duration handled by one bucket
-our $IV_duration = int($Total_duration / $Bucket_qty); 
-## how many bucket held before we purge the old ones
-our $Bucket_limit =  2 * $Bucket_qty;
-
 use vars qw($DEBUG);
 $DEBUG = 0;
 

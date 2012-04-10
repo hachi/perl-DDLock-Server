@@ -82,53 +82,13 @@ sub cmd_status {
 
     my $runtime = time - $^T;
 
-    my $load = current_load();
     $self->write("STATUS: OK\n");
     $self->write("SUCCESSES: $lock_successes\n");
     $self->write("FAILURES: $lock_failures\n");
     $self->write("RUNTIME: $runtime\n");
-    $self->write("LOAD: $load\n");
     $self->write("\n");
 
     return 1;
-}
-
-sub iv_for_time {
-    my $time = shift;
-    return $time - ($time % $main::IV_duration);
-}
-
-sub latest_ivs {
-    my $time = shift || time;
-    my $current_iv = iv_for_time($time) + $main::IV_duration;
-    return map { $current_iv -= $main::IV_duration } ( 0 .. $main::Bucket_qty - 1);  
-}
-
-
-sub current_load {
-    my $sum = 0; 
-    for (grep { $_ } @main::IVs{latest_ivs()}) {
-         $sum += $_;
-    }
-    return $sum;
-}
-
-sub cmd_load {
-    my DDLock::Server::Client $self = shift;
-    my $load = current_load();
-    $self->write("LOAD: $load\n");
-    $self->write("\n");
-
-    return 1;
-}
-
-sub increase_load {
-    my $time = time; 
-    $main::IVs{ iv_for_time($time) }++;
-    if (scalar( keys %main::IVs ) > $main::Bucket_limit) {
-        # purge IVs 
-        %main::IVs = map { $_ => $main::IVs{$_} } latest_ivs($time);
-    }
 }
 
 # gets a lock or fails with 'taken'
@@ -139,7 +99,6 @@ sub cmd_trylock {
     my $lock = $args->{lock};
     my $lockstate = $self->_trylock( $lock );
 
-    increase_load();
     if ($lockstate) {
         $lock_successes++;
     } else {
