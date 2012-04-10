@@ -1,9 +1,9 @@
-package DDLockd::Server::Client::Internal;
+package DDLock::Server::Client::Internal;
 
 use strict;
 use warnings;
 
-use base 'DDLockd::Server::Client';
+use base 'DDLock::Server::Client';
 
 our (%holder);  # hash of lock -> Client object holding it
 # TODO: out %waiters, lock -> arrayref of client waiters (waker should check not closed)
@@ -13,7 +13,7 @@ sub _setup {
 }
 
 sub _trylock {
-    my DDLockd::Server::Client::Internal $self = shift;
+    my DDLock::Server::Client::Internal $self = shift;
     my $lock = shift;
 
     return $self->err_line("empty_lock") unless length($lock);
@@ -26,7 +26,7 @@ sub _trylock {
 }
 
 sub _release_lock {
-    my DDLockd::Server::Client::Internal $self = shift;
+    my DDLock::Server::Client::Internal $self = shift;
     my $lock = shift;
 
     # TODO: notify waiters

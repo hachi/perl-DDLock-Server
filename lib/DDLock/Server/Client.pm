@@ -1,7 +1,7 @@
 #####################################################################
 ### C L I E N T   C L A S S
 #####################################################################
-package DDLockd::Server::Client;
+package DDLock::Server::Client;
 
 use strict;
 use warnings;
@@ -19,7 +19,7 @@ my $lock_successes = 0;
 my $lock_failures = 0;
 
 sub new {
-    my DDLockd::Server::Client $self = shift;
+    my DDLock::Server::Client $self = shift;
     $self = fields::new($self) unless ref $self;
     $self->SUPER::new( @_ );
 
@@ -30,7 +30,7 @@ sub new {
 
 # Client
 sub event_read {
-    my DDLockd::Server::Client $self = shift;
+    my DDLock::Server::Client $self = shift;
 
     my $bref = $self->read(1024);
     return $self->close() unless defined $bref;
@@ -43,7 +43,7 @@ sub event_read {
 }
 
 sub process_line {
-    my DDLockd::Server::Client $self = shift;
+    my DDLock::Server::Client $self = shift;
     my $line = shift;
 
     if ($line =~ /^(\w+)\s*(.*)/) {
@@ -63,7 +63,7 @@ sub process_line {
 }
 
 sub close {
-    my DDLockd::Server::Client $self = shift;
+    my DDLock::Server::Client $self = shift;
 
     foreach my $lock (keys %{$self->{locks}}) {
         $self->_release_lock($lock);
@@ -78,7 +78,7 @@ sub event_err { my $self = shift; $self->close; }
 sub event_hup { my $self = shift; $self->close; }
 
 sub cmd_status {
-    my DDLockd::Server::Client $self = shift;
+    my DDLock::Server::Client $self = shift;
 
     my $runtime = time - $^T;
 
@@ -114,7 +114,7 @@ sub current_load {
 }
 
 sub cmd_load {
-    my DDLockd::Server::Client $self = shift;
+    my DDLock::Server::Client $self = shift;
     my $load = current_load();
     $self->write("LOAD: $load\n");
     $self->write("\n");
@@ -133,7 +133,7 @@ sub increase_load {
 
 # gets a lock or fails with 'taken'
 sub cmd_trylock {
-    my DDLockd::Server::Client $self = shift;
+    my DDLock::Server::Client $self = shift;
     my $args = shift;
 
     my $lock = $args->{lock};
@@ -151,7 +151,7 @@ sub cmd_trylock {
 
 # releases a lock or fails with 'didnthave'
 sub cmd_releaselock {
-    my DDLockd::Server::Client $self = shift;
+    my DDLock::Server::Client $self = shift;
     my $args = shift;
 
     my $lock = $args->{lock};
@@ -164,7 +164,7 @@ sub cmd_releaselock {
 
 # shows current locks
 sub cmd_locks {
-    my DDLockd::Server::Client $self = shift;
+    my DDLock::Server::Client $self = shift;
     my $args = shift;
 
     $self->write("LOCKS:\n");
@@ -175,14 +175,14 @@ sub cmd_locks {
 }
 
 sub cmd_noop {
-    my DDLockd::Server::Client $self = shift;
+    my DDLock::Server::Client $self = shift;
     # TODO: set self's last activity time so it isn't cleaned in a purge
     #       of stale connections?
     return $self->ok_line;
 }
 
 sub ok_line {
-    my DDLockd::Server::Client $self = shift;
+    my DDLock::Server::Client $self = shift;
     my $args = shift || {};
     my $argline = join('&', map { eurl($_) . "=" . eurl($args->{$_}) } keys %$args);
     $self->write("OK $argline\r\n");
@@ -190,7 +190,7 @@ sub ok_line {
 }
 
 sub err_line {
-    my DDLockd::Server::Client $self = shift;
+    my DDLock::Server::Client $self = shift;
     my $err_code = shift;
     my $err_text = {
         'unknown_command' => "Unknown server command",

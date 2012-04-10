@@ -1,9 +1,9 @@
-package DDLockd::Server::Client::DLMFS;
+package DDLock::Server::Client::DLMFS;
 
 use strict;
 use warnings;
 
-use base 'DDLockd::Server::Client';
+use base 'DDLock::Server::Client';
 use Fcntl;
 use Errno qw(EEXIST ETXTBSY);
 
@@ -16,7 +16,7 @@ sub _setup {
 }
 
 sub _trylock {
-    my DDLockd::Server::Client::Internal $self = shift;
+    my DDLock::Server::Client::Internal $self = shift;
     my $lock = shift;
 
     return $self->err_line("empty_lock") unless length($lock);
@@ -40,7 +40,7 @@ sub _trylock {
 }
 
 sub _release_lock {
-    my DDLockd::Server::Client::Internal $self = shift;
+    my DDLock::Server::Client::Internal $self = shift;
     my $lock = shift;
 
     # TODO: notify waiters

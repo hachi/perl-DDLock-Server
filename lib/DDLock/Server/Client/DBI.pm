@@ -1,11 +1,11 @@
-package DDLockd::Server::Client::DBI;
+package DDLock::Server::Client::DBI;
 
 use strict;
 use warnings;
 
 # CREATE TABLE
 
-use base 'DDLockd::Server::Client';
+use base 'DDLock::Server::Client';
 use fields qw(dbh);
 
 my $hostname;
@@ -13,14 +13,14 @@ my $table;
 my $dbh;
 
 sub _setup {
-    my DDLockd::Server::Client::DBI $self = shift;
+    my DDLock::Server::Client::DBI $self = shift;
     ($hostname, $table) = @_;
     eval "use DBI; 1" or die "No DBI available?";
     $dbh = DBI->connect( 'dbi:mysql:dbname=sixalock', '', '', {AutoCommit => 0} ) or die;
 }
 
 sub _trylock {
-    my DDLockd::Server::Client::DBI $self = shift;
+    my DDLock::Server::Client::DBI $self = shift;
     my $lock = shift;
 
     my $local_locks = $self->{locks};
@@ -45,7 +45,7 @@ sub _trylock {
 }
 
 sub _release_lock {
-    my DDLockd::Server::Client::DBI $self = shift;
+    my DDLock::Server::Client::DBI $self = shift;
     my $lock = shift;
 
     my $locks = $self->{locks};
@@ -60,7 +60,7 @@ sub _release_lock {
 }
 
 sub _get_locks {
-    my DDLockd::Server::Client::DBI $self = shift;
+    my DDLock::Server::Client::DBI $self = shift;
 
     my $ary = $dbh->selectall_arrayref( "SELECT name FROM $table" );
     return map { $_->[0] } @$ary;

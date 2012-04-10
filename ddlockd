@@ -58,15 +58,15 @@ Getopt::Long::GetOptions(
 my $client_class;
 my @client_options;
 if ($lock_type eq 'internal') {
-    $client_class = "DDLockd::Server::Client::Internal";
+    $client_class = "DDLock::Server::Client::Internal";
 }
 elsif($lock_type eq 'dlmfs') {
-    $client_class = "DDLockd::Server::Client::DLMFS";
+    $client_class = "DDLock::Server::Client::DLMFS";
 }
 elsif($lock_type eq 'dbi') {
     length( $hostname ) or die( "-h (--hostname) must be included with a hostname in dbi mode\n" );
     length( $table ) or die( "-T (--table) must be included with a table name in dbi mode\n" );
-    $client_class = "DDLockd::Server::Client::DBI";
+    $client_class = "DDLock::Server::Client::DBI";
     @client_options = ( $hostname, $table );
 }
 else {
@@ -127,8 +127,8 @@ my $accept_handler = sub {
     $client->watch_read(1);
 };
 
-DDLockd::Server::Client->OtherFds(fileno($server) => $accept_handler);
-DDLockd::Server::Client->EventLoop();
+DDLock::Server::Client->OtherFds(fileno($server) => $accept_handler);
+DDLock::Server::Client->EventLoop();
 
 sub daemonize {
     my($pid, $sess_id, $i);
