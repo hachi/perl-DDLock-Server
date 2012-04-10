@@ -18,99 +18,28 @@ use warnings;
 
 use Getopt::Long;
 use Carp;
-use Danga::Socket;
-use IO::Socket::INET;
 use POSIX ();
 
-my (
-    $daemonize,
-    $nokeepalive,
-    $hostname,
-    $table,
-   );
-my $conf_port = 7002;
-my $lock_type = "internal";
+use DDLock::Server;
+
+my %args;
 
 Getopt::Long::GetOptions(
-    'd|daemon'       => \$daemonize,
-    'p|port=i'       => \$conf_port,
-    'n|no-keepalive' => \$nokeepalive,
-    't|type=s'       => \$lock_type,
-    'h|hostname=s'   => \$hostname,
-    'T|table=s'  => \$table,
+    'd|daemon'       => \(my $daemonize),
+    'p|port=i'       => sub { $args{port} = $_[1] },
+    'n|no-keepalive' => sub { $args{nokeepalive}++ },
+    'e|engine=s'     => sub { $args{engine} = $_[1] },
+    'h|hostname=s'   => sub { $args{hostname} = $_[1] },
+    'T|table=s'      => sub { $args{table} = $_[1] },
    );
-
-my $client_class;
-my @client_options;
-if ($lock_type eq 'internal') {
-    $client_class = "DDLock::Server::Client::Internal";
-}
-elsif($lock_type eq 'dlmfs') {
-    $client_class = "DDLock::Server::Client::DLMFS";
-}
-elsif($lock_type eq 'dbi') {
-    length( $hostname ) or die( "-h (--hostname) must be included with a hostname in dbi mode\n" );
-    length( $table ) or die( "-T (--table) must be included with a table name in dbi mode\n" );
-    $client_class = "DDLock::Server::Client::DBI";
-    @client_options = ( $hostname, $table );
-}
-else {
-    die( "Unknown lock type of '$lock_type' specified.\n" );
-}
-
-eval "use $client_class; 1"
-    or die "Couldn't load class '$client_class' to handle lock type '$lock_type': $@\n";
-
-$client_class->_setup( @client_options );
 
 daemonize() if $daemonize;
 
-use Socket qw(IPPROTO_TCP SO_KEEPALIVE TCP_NODELAY SOL_SOCKET);
-
-# Linux-specific:
-use constant TCP_KEEPIDLE  => 4; # Start keeplives after this period
-use constant TCP_KEEPINTVL => 5; # Interval between keepalives
-use constant TCP_KEEPCNT   => 6; # Number of keepalives before death
-
 $SIG{'PIPE'} = "IGNORE";  # handled manually
 
-# establish SERVER socket, bind and listen.
-my $server = IO::Socket::INET->new(LocalPort => $conf_port,
-                                   Type      => SOCK_STREAM,
-                                   Proto     => IPPROTO_TCP,
-                                   Blocking  => 0,
-                                   Reuse     => 1,
-                                   Listen    => 10 )
-    or die "Error creating socket: $@\n";
+my $ddlock = DDLock::Server->new(%args);
 
-# Not sure if I'm crazy or not, but I can't see in strace where/how
-# Perl 5.6 sets blocking to 0 without this.  In Perl 5.8, IO::Socket::INET
-# obviously sets it from watching strace.
-IO::Handle::blocking($server, 0);
-
-my $accept_handler = sub {
-    my $csock = $server->accept();
-    return unless $csock;
-
-    IO::Handle::blocking($csock, 0);
-    setsockopt($csock, IPPROTO_TCP, TCP_NODELAY, pack("l", 1)) or die;
-
-    # Enable keep alive
-    unless ( $nokeepalive ) {
-        (setsockopt($csock, SOL_SOCKET, SO_KEEPALIVE,  pack("l", 1)) &&
-         setsockopt($csock, IPPROTO_TCP, TCP_KEEPIDLE,  pack("l", 30)) &&
-         setsockopt($csock, IPPROTO_TCP, TCP_KEEPCNT,   pack("l", 10)) &&
-         setsockopt($csock, IPPROTO_TCP, TCP_KEEPINTVL, pack("l", 30)) &&
-         1
-        ) || die "Couldn't set keep-alive settings on socket (Not on Linux?)";
-    }
-
-    my $client = $client_class->new($csock);
-    $client->watch_read(1);
-};
-
-DDLock::Server::Client->OtherFds(fileno($server) => $accept_handler);
-DDLock::Server::Client->EventLoop();
+$ddlock->EventLoop();
 
 sub daemonize {
     my($pid, $sess_id, $i);
