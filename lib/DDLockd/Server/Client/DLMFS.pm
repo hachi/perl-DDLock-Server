@@ -1,5 +1,8 @@
 package DDLockd::Server::Client::DLMFS;
 
+use strict;
+use warnings;
+
 use base 'DDLockd::Server::Client';
 use Fcntl;
 use Errno qw(EEXIST ETXTBSY);

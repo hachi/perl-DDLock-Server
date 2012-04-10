@@ -1,5 +1,8 @@
 package DDLockd::Server::Client::DBI;
 
+use strict;
+use warnings;
+
 # CREATE TABLE
 
 use base 'DDLockd::Server::Client';

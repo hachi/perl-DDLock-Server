@@ -3,6 +3,9 @@
 #####################################################################
 package DDLockd::Server::Client;
 
+use strict;
+use warnings;
+
 use Danga::Socket;
 use base 'Danga::Socket';
 use fields (

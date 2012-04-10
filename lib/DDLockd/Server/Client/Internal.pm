@@ -1,5 +1,8 @@
 package DDLockd::Server::Client::Internal;
 
+use strict;
+use warnings;
+
 use base 'DDLockd::Server::Client';
 
 our (%holder);  # hash of lock -> Client object holding it
