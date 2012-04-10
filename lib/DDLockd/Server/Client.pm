@@ -15,6 +15,9 @@ use fields (
 
 # TODO: out %waiters, lock -> arrayref of client waiters (waker should check not closed)
 
+my $lock_successes = 0;
+my $lock_failures = 0;
+
 sub new {
     my DDLockd::Server::Client $self = shift;
     $self = fields::new($self) unless ref $self;
@@ -52,7 +55,7 @@ sub process_line {
         if ($cmd_handler) {
             my $args = decode_url_args(\$args);
             $cmd_handler->($self, $args);
-            next;
+            return;
         }
     }
 
@@ -200,6 +203,7 @@ sub err_line {
 sub eurl
 {
     my $a = $_[0];
+    $a = '' unless defined $a;
     $a =~ s/([^a-zA-Z0-9_\,\-.\/\\\: ])/uc sprintf("%%%02x",ord($1))/eg;
     $a =~ tr/ /+/;
     return $a;

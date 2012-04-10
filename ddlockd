@@ -55,10 +55,6 @@ Getopt::Long::GetOptions(
     'T|table=s'  => \$table,
    );
 
-# Statistics counters
-my $lock_successes = 0;
-my $lock_failures  = 0;
-
 my $client_class;
 my @client_options;
 if ($lock_type eq 'internal') {
